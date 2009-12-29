@@ -18,9 +18,15 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+%{
+#include "scalc.tab.hpp"
+
+%}
 
 digit   [0-9]
 letter  [A-Za-z]
+
+identifier  ({letter}|_)+({letter}|{digit}|_)*
 
     // see http://www.cplusplus.com/reference/clibrary/cstdlib/strtod.html
     // for an exact definition of how a floating point number looks like
@@ -29,7 +35,6 @@ number  [-+]?{digit}+\.?{digit}*{exponent_part}?
 
 u_integer   {digit}+
 integer [-+]?{u_integer}
-
 
 
 %{
@@ -45,26 +50,30 @@ integer [-+]?{u_integer}
 %%
 
 
-
 {u_integer}   { // only unsigned integers
-                std::cout<<"Found unsigned Integer: "<<yytext;
-            }
+        return UINT;
+    }
 
 {integer}   { // only integers
-                std::cout<<"Found Integer: "<<yytext;
-            }
+        return INT;
+    }
 
+{identifier}    {
+        return IDENTIFIER;
+    }
 
 {number}  { // any other numerical value
-                std::cout<<"Found Number: "<<yytext;
-        }
+        return NUMBER;
+    }
 
-[-+*/();]     std::cout<<"Found special character: "<<*yytext; // special characters
+[-+*/();]    return *yytext; // special characters
+
+\n  return *yytext;
 
 [ \t]   ; /*skip whitespace */
 
 
-.   std::cerr<< ("Invalid characters!");
+.   return *yytext; // return the rest to the responsibility of the parser
 
 %%
 
