@@ -21,10 +21,10 @@
 
 %{
 #include <iostream>
+#include "lex.scalc.hpp"
 %}
 
 %token  UINT
-%token  INT
 %token  NUMBER
 %token  IDENTIFIER
 
@@ -39,9 +39,16 @@
 
 %{
     void yyerror(const char* s);
-    extern int yylex();
-    extern char *yytext;
 %}
+
+// Turn on verbose error messages to get a proper error message
+%error-verbose
+
+// declare operator precedence
+%left '+' '-'
+%left '*'
+%left '/'
+%left NEGATION
 
 %%
 
@@ -66,17 +73,28 @@ statement:
 expression:
     number
     { $$ = $1; }
-|
-    '(' expression ')'
+|   expression '+' expression
+    { $$ = $1 + $3; }
+
+|   expression '-' expression
+    { $$ = $1 - $3; }
+
+|   expression '*' expression
+    { $$ = $1 * $3; }
+
+|   expression '/' expression
+    { $$ = $1 / $3; }
+
+|   '-' expression  %prec NEGATION
+    { $$ = -$2; }
+
+|   '(' expression ')'
     { $$ = $2; }
 ;
 
 // A number is whatever looks a number
 number:
     UINT
-    { $$ = strtod(yytext, NULL); }
-|
-    INT
     { $$ = strtod(yytext, NULL); }
 |
     NUMBER
@@ -87,5 +105,5 @@ number:
 
 void yyerror(const char* s)
 {
-    std::cerr<<s<<std::endl;
+    std::cerr<<s<<", line "<<yylineno<<std::endl;
 }

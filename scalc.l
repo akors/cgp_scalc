@@ -31,21 +31,18 @@ identifier  ({letter}|_)+({letter}|{digit}|_)*
     // see http://www.cplusplus.com/reference/clibrary/cstdlib/strtod.html
     // for an exact definition of how a floating point number looks like
 exponent_part   [eE][-+]?{digit}+
-number  [-+]?{digit}+\.?{digit}*{exponent_part}?
+number  {digit}+\.?{digit}*{exponent_part}?
 
 u_integer   {digit}+
-integer [-+]?{u_integer}
 
 
 %{
 
 #include <iostream>
 
-
-
 %}
 
-
+%option yylineno
 
 %%
 
@@ -54,9 +51,6 @@ integer [-+]?{u_integer}
         return UINT;
     }
 
-{integer}   { // only integers
-        return INT;
-    }
 
 {identifier}    {
         return IDENTIFIER;

@@ -19,11 +19,22 @@
 */
 
 #include <iostream>
+#include <cstring>
 
 extern int yyparse();
 
-int main()
+#if defined(YYDEBUG)
+    extern int yydebug;
+#endif
+
+int main(int argc, char** argv)
 {
+#if defined(YYDEBUG)
+    // turn on debugging when -d option is specified
+    if (argc > 2 && !strcmp("-d", argv[2]))
+        yydebug = 1;
+#endif
+
     yyparse();
     return 0;
 }
