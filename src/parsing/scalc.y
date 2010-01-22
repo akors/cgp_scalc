@@ -65,7 +65,7 @@ input:
 statement:
     expression '\n'
     {
-        std::cout<<"Found expression. Value: "<<$<dbl>1<<'\n';
+        std::cout<<$<dbl>1<<'\n';
     }
 ;
 
