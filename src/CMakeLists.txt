@@ -7,6 +7,9 @@
 # we need at least cmake 2.6
 cmake_minimum_required(VERSION 2.6)
 
+# we are compiling the project "scalc"
+project(scalc)
+
 # we need the parsing module
 add_subdirectory(parsing)
 
