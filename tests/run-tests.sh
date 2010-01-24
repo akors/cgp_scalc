@@ -20,6 +20,11 @@ if [ ! -f "$1" ]; then
     exit 1
 else
     EXFILE="$1"
+    # if somebody provided the name of the executable without any directories,
+    # prepend './' to be able to execute the file
+    if [ "$EXFILE" = $(basename "$EXFILE") ]; then
+        EXFILE="./$EXFILE"
+    fi
 fi
 
 # second argument is the testing directory
@@ -47,7 +52,7 @@ do
     T_BASENAME="${TFILE%.sc}"
     printf "Running $T_BASENAME... "
 
-    run_test "$EXFILE" $(basename "$TFILE" ".sc")
+    run_test "$EXFILE" "$TESTDIR/$(basename $TFILE .sc)"
     if [ $? -eq 0 ]
     then
         printf '\33[32m passed. \33[0m\n'
