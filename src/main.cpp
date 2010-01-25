@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <stdexcept>
 
 #include "parsing/parsing.hpp"
 
@@ -83,6 +84,18 @@ int main(int argc, char** argv)
         }
     }
 
+    // do the parsing
+    try {
+        yyparse();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr<<"Encountered exception while parsing: "<<e.what();
+        do_cleanup();
+    };
+
     yyparse();
+
+
     return 0;
 }

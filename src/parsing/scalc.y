@@ -2,7 +2,7 @@
 
 /*
  *   scalc - A simple calculator
- *   Copyright (C) 2009  Alexander Korsunsky
+ *   Copyright (C) 2009, 2010  Alexander Korsunsky
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,15 @@
 
 %{
 #include <iostream>
+
+#include "parsing.hpp"
+#include "semantic.hpp"
+
 #include "lex.scalc.hpp"
+
+void yyerror(const char* s);
+
+RegisteredPtrs<NumericValue> numericValue_Ptrs;
 %}
 
 %token  UINT
@@ -37,9 +45,7 @@
 %type <dbl> expression
 %type <dbl> number
 
-%{
-    void yyerror(const char* s);
-%}
+
 
 // Turn on verbose error messages to get a proper error message
 %error-verbose
@@ -50,7 +56,9 @@
 %left '/'
 %left NEGATION
 
+
 %%
+
 
 
 // Parser input is none or more statements
@@ -106,4 +114,9 @@ number:
 void yyerror(const char* s)
 {
     std::cerr<<s<<", line "<<yylineno<<std::endl;
+}
+
+void do_cleanup()
+{
+    numericValue_Ptrs.deleteAll();
 }

@@ -15,7 +15,9 @@ FLEX_TARGET(ScalcScanner scalc.l ${CMAKE_CURRENT_BINARY_DIR}/lex.scalc.cpp
 
 ADD_FLEX_BISON_DEPENDENCY(ScalcScanner ScalcParser)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 
 add_library(scalc-parsing
     ${BISON_ScalcParser_OUTPUTS}
