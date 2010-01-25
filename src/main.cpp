@@ -22,6 +22,8 @@
 #include <cstring>
 #include <stdexcept>
 
+#include <cstdio>
+
 #include "parsing/parsing.hpp"
 
 const char* usage_string =

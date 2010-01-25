@@ -22,6 +22,7 @@
 #define PARSING_HPP_
 
 #include <vector>
+#include <algorithm>
 
 
 template <typename IteratorT>
@@ -168,5 +169,10 @@ void RegisteredPtrs<T>::deleteAll()
 extern int yyparse ();
 extern void do_cleanup();
 extern FILE* yyin;
+
+#define MEMORY_ASSERT(p) \
+if ( (p) == NULL ) \
+    throw std::bad_alloc();
+
 
 #endif // ifndef PARSING_HPP_

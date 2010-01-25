@@ -50,6 +50,12 @@ struct NumericValue
         this->value /= other.value;
         return *this;
     }
+
+    NumericValue& negate()
+    {
+        value = -value;
+        return *this;
+    }
 };
 
 inline std::ostream& operator << (std::ostream& os, const NumericValue& v)

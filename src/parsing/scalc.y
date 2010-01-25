@@ -21,15 +21,18 @@
 
 %{
 #include <iostream>
+#include <sstream>
 
 #include "parsing.hpp"
 #include "semantic.hpp"
+
 
 #include "lex.scalc.hpp"
 
 void yyerror(const char* s);
 
 RegisteredPtrs<NumericValue> numericValue_Ptrs;
+
 %}
 
 %token  UINT
@@ -39,11 +42,11 @@ RegisteredPtrs<NumericValue> numericValue_Ptrs;
 
 %union
 {
-    double dbl;
+    NumericValue *numeric_value_ptr;
 };
 
-%type <dbl> expression
-%type <dbl> number
+%type <numeric_value_ptr> expression
+%type <numeric_value_ptr> number
 
 
 
@@ -73,7 +76,7 @@ input:
 statement:
     expression '\n'
     {
-        std::cout<<$<dbl>1<<'\n';
+        std::cout<<*$1<<'\n';
     }
 ;
 
@@ -82,19 +85,39 @@ expression:
     number
     { $$ = $1; }
 |   expression '+' expression
-    { $$ = $1 + $3; }
+    {
+        // add second expression to first, delete second, return first
+        *$1 += *$3;
+        numericValue_Ptrs.registeredDelete($3);
+        $$ = $1;
+    }
 
 |   expression '-' expression
-    { $$ = $1 - $3; }
+    {
+        *$1 -= *$3;
+        numericValue_Ptrs.registeredDelete($3);
+        $$ = $1;
+    }
 
 |   expression '*' expression
-    { $$ = $1 * $3; }
+    {
+        *$1 *= *$3;
+        numericValue_Ptrs.registeredDelete($3);
+        $$ = $1;
+    }
 
 |   expression '/' expression
-    { $$ = $1 / $3; }
+    {
+        *$1 /= *$3;
+        numericValue_Ptrs.registeredDelete($3);
+        $$ = $1;
+    }
 
 |   '-' expression  %prec NEGATION
-    { $$ = -$2; }
+    {
+        $2->negate();
+        $$ = $2;
+    }
 
 |   '(' expression ')'
     { $$ = $2; }
@@ -103,10 +126,30 @@ expression:
 // A number is whatever looks a number
 number:
     UINT
-    { $$ = strtod(yytext, NULL); }
+    {
+        // create stringstream to read number
+        std::istringstream number_str(yytext);
+
+        // create new NumericValue object
+        $$ = numericValue_Ptrs.registerNew(new NumericValue);
+        MEMORY_ASSERT($$);
+
+        // try to read the number from the string
+        number_str>>*$$;
+    }
 |
     NUMBER
-    { $$ = strtod(yytext, NULL); }
+    {
+        // create stringstream to read number
+        std::istringstream number_str(yytext);
+
+        // create new NumericValue object
+        $$ = numericValue_Ptrs.registerNew(new NumericValue);
+        MEMORY_ASSERT($$);
+
+        // try to read the number from the string
+        number_str>>*$$;
+    }
 ;
 
 %%
