@@ -174,5 +174,9 @@ extern FILE* yyin;
 if ( (p) == NULL ) \
     throw std::bad_alloc();
 
+#if defined(YYDEBUG)
+    extern int yydebug;
+#endif
+
 
 #endif // ifndef PARSING_HPP_

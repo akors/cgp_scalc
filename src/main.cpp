@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         }
 #if defined(YYDEBUG)
         // turn on debugging when -d option is specified
-        else if (!strcmp("-d", argv[i]), !strcmp("--debug", argv[i]))
+        else if (!strcmp("-d", argv[i]) || !strcmp("--debug", argv[i]))
             yydebug = 1;
 #endif
         // retrieve positional options
