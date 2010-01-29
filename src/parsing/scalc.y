@@ -78,6 +78,10 @@ statement:
     {
         std::cout<<*$1<<'\n';
     }
+|   error '\n'
+    {
+        yyerrok;
+    }
 ;
 
 // preliminarily, an expression is just a number
@@ -156,7 +160,7 @@ number:
 
 void yyerror(const char* s)
 {
-    std::cerr<<s<<", line "<<yylineno<<std::endl;
+    std::cerr<<s<<". line "<<yylineno<<std::endl;
 }
 
 void do_cleanup()
