@@ -24,6 +24,9 @@
 
 %}
 
+    // create a start condition for comments
+%x comment_cond
+
 digit   [0-9]
 letter  [A-Za-z]
 
@@ -47,6 +50,20 @@ u_integer   {digit}+
 
 %%
 
+#   {
+        // set lexer to comment condition
+        BEGIN(comment_cond);
+    }
+
+<comment_cond>\n {
+        // every comment ends with a newline, so end condition here
+        BEGIN(INITIAL);
+        return *yytext;
+    }
+
+<comment_cond>. {
+    // when in comment mode, eat any character that is not a newline
+}
 
 {u_integer}   { // only unsigned integers
         return UINT;
