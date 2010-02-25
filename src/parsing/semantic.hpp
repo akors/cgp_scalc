@@ -79,7 +79,7 @@ struct NumericValue
     {
         char* endptr;
 
-        value.exact = strtol(str, &endptr, 0);
+        value.exact = strtol(str, &endptr, 10);
         if (endptr == str)
         {
             throw(NumericError(
