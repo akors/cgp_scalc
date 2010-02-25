@@ -10,6 +10,8 @@ find_package(FLEX REQUIRED)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     set(YYDEBUG "--debug --verbose")
+else()
+    set(YYDEBUG " ")
 endif()
 
 
