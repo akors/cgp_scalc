@@ -96,8 +96,5 @@ int main(int argc, char** argv)
         do_cleanup();
     };
 
-    yyparse();
-
-
     return 0;
 }
