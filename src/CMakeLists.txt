@@ -13,6 +13,11 @@ project(scalc)
 # we need the parsing module
 add_subdirectory(parsing)
 
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DYYDEBUG)
+endif()
+
 # the executable needs only main.cpp
 add_executable(scalc main.cpp)
 

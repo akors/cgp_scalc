@@ -8,8 +8,14 @@
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    set(YYDEBUG "--debug --verbose")
+endif()
+
+
 # create targets for Flex and Bison
-BISON_TARGET(ScalcParser scalc.y ${CMAKE_CURRENT_BINARY_DIR}/scalc.tab.cpp)
+BISON_TARGET(ScalcParser scalc.y ${CMAKE_CURRENT_BINARY_DIR}/scalc.tab.cpp
+    COMPILE_FLAGS ${YYDEBUG})
 FLEX_TARGET(ScalcScanner scalc.l ${CMAKE_CURRENT_BINARY_DIR}/lex.scalc.cpp
     COMPILE_FLAGS "--header-file=${CMAKE_CURRENT_BINARY_DIR}/lex.scalc.hpp")
 
