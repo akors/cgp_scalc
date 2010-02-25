@@ -86,6 +86,7 @@ statement:
     {
         yyerrok;
     }
+|   '\n'
 ;
 
 // preliminarily, an expression is just a number
