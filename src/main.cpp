@@ -39,6 +39,10 @@ const char* usage_string =
 
 int main(int argc, char** argv)
 {
+    ParserOptions parser_options = {
+        false
+    };
+
     // name of the input file, NULL if reading from stdin
     char *infilename = NULL;
 
@@ -84,11 +88,13 @@ int main(int argc, char** argv)
             perror ("Failed to open file");
             return 0;
         }
+
+        parser_options.file_input = true;
     }
 
     // do the parsing
     try {
-        yyparse();
+        yyparse(parser_options);
     }
     catch (const std::exception& e)
     {

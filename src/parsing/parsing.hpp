@@ -166,7 +166,12 @@ void RegisteredPtrs<T>::deleteAll()
     currentlyRegistered.clear();
 }
 
-extern int yyparse ();
+struct ParserOptions
+{
+    bool file_input;
+};
+
+extern int yyparse(const ParserOptions& parser_options);
 extern void do_cleanup();
 extern FILE* yyin;
 
@@ -177,6 +182,7 @@ if ( (p) == NULL ) \
 #if defined(YYDEBUG)
     extern int yydebug;
 #endif
+
 
 
 #endif // ifndef PARSING_HPP_

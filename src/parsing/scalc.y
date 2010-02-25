@@ -29,7 +29,8 @@
 
 #include "lex.scalc.hpp"
 
-void yyerror(const char* s);
+void print_prompt(const ParserOptions& parser_options);
+void yyerror(const ParserOptions& parser_options, const char* s);
 
 RegisteredPtrs<NumericValue> numericValue_Ptrs;
 
@@ -52,6 +53,9 @@ RegisteredPtrs<NumericValue> numericValue_Ptrs;
 
 // Turn on verbose error messages to get a proper error message
 %error-verbose
+
+// take parser options as argument
+%parse-param {const ParserOptions& parser_options}
 
 // declare operator precedence
 %left '+' '-'
@@ -158,7 +162,7 @@ number:
 
 %%
 
-void yyerror(const char* s)
+void yyerror(const ParserOptions& parser_options, const char* s)
 {
     std::cerr<<s<<". line "<<yylineno<<std::endl;
 }
@@ -166,4 +170,10 @@ void yyerror(const char* s)
 void do_cleanup()
 {
     numericValue_Ptrs.deleteAll();
+}
+
+void print_prompt(const ParserOptions& parser_options)
+{
+    if (!parser_options.file_input)
+        puts("");
 }
