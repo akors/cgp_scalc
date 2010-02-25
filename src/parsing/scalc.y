@@ -71,6 +71,10 @@ RegisteredPtrs<NumericValue> numericValue_Ptrs;
 // Parser input is none or more statements
 input:
     // empty
+    {
+        // this action should only be performend on startup
+        print_prompt(parser_options);
+    }
 |
     input statement
 ;
@@ -81,12 +85,17 @@ statement:
     expression '\n'
     {
         std::cout<<*$1<<'\n';
+        print_prompt(parser_options);
     }
 |   error '\n'
     {
         yyerrok;
+        print_prompt(parser_options);
     }
 |   '\n'
+    {
+        print_prompt(parser_options);
+    }
 ;
 
 // preliminarily, an expression is just a number
@@ -184,5 +193,5 @@ void do_cleanup()
 void print_prompt(const ParserOptions& parser_options)
 {
     if (!parser_options.file_input)
-        puts("> ");
+        printf("> ");
 }
