@@ -9,7 +9,8 @@
 run_test()
 {
     # compare the output of $1 when called with $2.sc to $2.expected
-    "$1" "$2.sc" 2>&1 | tee "$TEMP_OUT_FILE" | diff -q - "$2.expected" 2>&1 > /dev/null
+    "$1" "$2.sc" 2>&1 | tee "$TEMP_OUT_FILE" | \
+        diff --side-by-side - "$2.expected" 2>&1 > "$TEMP_DIFF_OUT"
 
     return $?
 }
@@ -36,7 +37,9 @@ else
 fi
 
 # we need a temporary file for the program output
-TEMP_OUT_FILE=$(mktemp)
+# TEMP_OUT_FILE=$(mktemp)
+TEMP_OUT_FILE="/dev/null"
+TEMP_DIFF_OUT=$(mktemp)
 
 # retrieve only those files that end with .sc
 FILEPAT='.\+\.sc'
@@ -61,12 +64,16 @@ do
         printf '\33[32m passed. \33[0m\n'
     else
         printf '\33[31m failed! \33[0m\n'
-        cat "$TEMP_OUT_FILE"
+        # printf 'output:\n'
+        # cat "$TEMP_OUT_FILE"
+        printf 'diff:\n'
+        cat "$TEMP_DIFF_OUT"
         printf '\n'
     fi
 done
 
-rm -f "$TEMP_OUT_FILE"
+# rm -f "$TEMP_OUT_FILE"
+rm -f "$TEMP_DIFF_OUT"
 
 exit 0
 
