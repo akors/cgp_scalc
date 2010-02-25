@@ -136,28 +136,36 @@ expression:
 number:
     UINT
     {
-        // create stringstream to read number
-        std::istringstream number_str(yytext);
-
         // create new NumericValue object
         $$ = numericValue_Ptrs.registerNew(new NumericValue);
         MEMORY_ASSERT($$);
 
-        // try to read the number from the string
-        number_str>>*$$;
+        try {
+            // try to read the number from the string
+            $$->from_exact(yytext);
+        }
+        catch(const NumericError& e)
+        {
+            yyerror(parser_options, (std::string("Error: ")+e.what()).c_str());
+            YYERROR;
+        }
     }
 |
     NUMBER
     {
-        // create stringstream to read number
-        std::istringstream number_str(yytext);
-
         // create new NumericValue object
         $$ = numericValue_Ptrs.registerNew(new NumericValue);
         MEMORY_ASSERT($$);
 
-        // try to read the number from the string
-        number_str>>*$$;
+        try {
+            // try to read the number from the string
+            $$->from_floating(yytext);
+        }
+        catch(const NumericError& e)
+        {
+            yyerror(parser_options, (std::string("Error: ")+e.what()).c_str());
+            YYERROR;
+        }
     }
 ;
 
@@ -176,5 +184,5 @@ void do_cleanup()
 void print_prompt(const ParserOptions& parser_options)
 {
     if (!parser_options.file_input)
-        puts("");
+        puts("> ");
 }
