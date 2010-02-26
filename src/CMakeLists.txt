@@ -4,8 +4,8 @@
 # For terms and conditions of redistribution and modification of this file
 # please see the file LICENSE.txt.
 
-# we need at least cmake 2.6
-cmake_minimum_required(VERSION 2.6)
+# we need at least cmake 2.8
+cmake_minimum_required(VERSION 2.8)
 
 # we are compiling the project "scalc"
 project(scalc)
