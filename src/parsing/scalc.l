@@ -78,7 +78,7 @@ u_integer   {digit}+
         return NUMBER;
     }
 
-[-+*/();]    return *yytext; // special characters
+[-+*/\^();]    return *yytext; // special characters
 
 \n  return *yytext;
 

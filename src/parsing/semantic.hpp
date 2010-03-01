@@ -233,6 +233,33 @@ struct NumericValue
         return *this;
     }
 
+    NumericValue& pow(const NumericValue& other)
+    {
+        // exect to the power of an exact is still exact
+        if (this->value_type == EXACT && other.value_type == EXACT)
+        {
+            this->value.exact = std::pow(value.exact,other.value.exact);
+        }
+        // floating pow operation
+        else if (this->value_type == FLOATING && other.value_type == FLOATING)
+        {
+            this->value.floating = std::pow(value.floating,other.value.floating);
+        }
+
+        // convert to floating if exponent or base is floating
+        else if (this->value_type == EXACT && other.value_type == FLOATING)
+        {
+            this->value.floating = std::pow(value.exact, other.value.floating);
+            this->value_type = FLOATING;
+        }
+        else if (this->value_type == FLOATING && other.value_type == EXACT)
+        {
+            this->value.floating = std::pow(value.floating, other.value.exact);
+        }
+
+        return *this;
+    }
+
     NumericValue& negate()
     {
         if (value_type == EXACT)

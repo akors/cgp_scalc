@@ -61,6 +61,7 @@ RegisteredPtrs<NumericValue> numericValue_Ptrs;
 %left '+' '-'
 %left '*'
 %left '/'
+%right '^'
 %left NEGATION
 
 
@@ -127,6 +128,12 @@ expression:
 |   expression '/' expression
     {
         *$1 /= *$3;
+        numericValue_Ptrs.registeredDelete($3);
+        $$ = $1;
+    }
+|   expression '^' expression
+    {
+        $1->pow(*$3);
         numericValue_Ptrs.registeredDelete($3);
         $$ = $1;
     }
