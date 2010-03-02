@@ -27,6 +27,11 @@
 #include <cerrno>
 #include <cmath>
 
+#include <memory>
+
+#ifdef __GNUC__ // on gcc, std::tr1::shared_ptr is not part of memory by default
+#   include <tr1/memory>
+#endif
 
 struct NumericError : public std::runtime_error
 {
@@ -63,6 +68,8 @@ public:
 
 struct NumericValue
 {
+    typedef std::tr1::shared_ptr<NumericValue> ptr_t;
+
     // what type of number is this
     enum {
         EXACT,
@@ -284,5 +291,105 @@ inline std::ostream& operator << (std::ostream& os, const NumericValue& v)
 inline std::istream& operator >> (std::istream& is, NumericValue& v)
 { return is>>v.value.floating; }
 #endif
+
+
+
+struct Expression
+{
+    typedef std::tr1::shared_ptr<Expression> ptr_t;
+
+    // output class value to stream
+    virtual std::ostream& to_stream(std::ostream& os) const = 0;
+
+    // return numeric value
+    virtual NumericValue::ptr_t numeric_value() const = 0;
+
+    // virtual destructor
+    virtual ~Expression() {}
+};
+
+inline std::ostream& operator << (std::ostream& os, const Expression& exp)
+{ return exp.to_stream(os); }
+
+
+struct NumericExpression : public Expression
+{
+    NumericExpression(const NumericValue& val)
+      : _val(val)
+    {}
+
+    virtual NumericValue::ptr_t numeric_value() const
+    {
+        return NumericValue::ptr_t(new NumericValue(_val));
+    }
+
+    virtual std::ostream& to_stream(std::ostream& os) const
+    {
+        os<<_val;
+    }
+
+    virtual ~NumericExpression() {};
+
+    NumericValue _val;
+};
+
+
+struct UnaryOperation
+{
+    typedef NumericValue::ptr_t (*unary_operation_t)(NumericValue::ptr_t);
+
+    UnaryOperation(Expression::ptr_t operand, unary_operation_t expr_operator)
+        : _operand(operand), _expr_operator(expr_operator)
+    { }
+
+    virtual NumericValue::ptr_t numeric_value() const
+    {
+        return _expr_operator(_operand->numeric_value());
+    }
+
+    virtual std::ostream& to_stream(std::ostream& os) const
+    {
+        os<<*numeric_value();
+    }
+
+    virtual ~UnaryOperation() {}
+
+private:
+    Expression::ptr_t _operand;
+    unary_operation_t _expr_operator;
+};
+
+
+struct BinaryOperation
+{
+    typedef NumericValue::ptr_t (*binary_operation_t)
+        (NumericValue::ptr_t, NumericValue::ptr_t);
+
+    BinaryOperation(
+        Expression::ptr_t lhs, Expression::ptr_t rhs,
+        binary_operation_t expr_operator
+    )
+        : _lhs(lhs), _rhs(rhs), _expr_operator(expr_operator)
+    { }
+
+    virtual NumericValue::ptr_t numeric_value() const
+    {
+        return _expr_operator(_lhs->numeric_value(), _rhs->numeric_value());
+    }
+
+    virtual std::ostream& to_stream(std::ostream& os) const
+    {
+        os<<*numeric_value();
+    }
+
+    virtual ~BinaryOperation() {}
+
+private:
+    Expression::ptr_t _lhs, _rhs;
+    binary_operation_t _expr_operator;
+};
+
+
+
 
 #endif // ifndef SEMANTIC_HPP_
