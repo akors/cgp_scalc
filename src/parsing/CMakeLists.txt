@@ -30,4 +30,5 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_library(scalc-parsing
     ${BISON_ScalcParser_OUTPUTS}
     ${FLEX_ScalcScanner_OUTPUTS}
+    semantic.cpp
 )

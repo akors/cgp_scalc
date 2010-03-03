@@ -137,145 +137,6 @@ struct NumericValue
         return *this;
     }
 
-    NumericValue& operator += (const NumericValue& other)
-    {
-        // simply add values of the same type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact += other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating += other.value.floating;
-        }
-
-        // allways convert to higher order representation if types are different
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact + other.value.floating;
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating += other.value.exact;
-        }
-
-        return *this;
-    }
-
-    NumericValue& operator -= (const NumericValue& other)
-    {
-        // simply subtract values of the same type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact -= other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating -= other.value.floating;
-        }
-
-        // allways convert to higher order representation if types are different
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact - other.value.floating;
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating -= other.value.exact;
-        }
-
-        return *this;
-    }
-
-    NumericValue& operator *= (const NumericValue& other)
-    {
-        // simply multiply values of the same type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact *= other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating *= other.value.floating;
-        }
-
-        // allways convert to higher order representation if types are different
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact * other.value.floating;
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating *= other.value.exact;
-        }
-
-        return *this;
-    }
-
-    NumericValue& operator /= (const NumericValue& other)
-    {
-        // division allways produces a floating type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.floating =
-                static_cast<double>(this->value.exact) / other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating /= other.value.floating;
-        }
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact / other.value.floating;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating /= other.value.exact;
-        }
-
-        this->value_type = FLOATING;
-        return *this;
-    }
-
-    NumericValue& pow(const NumericValue& other)
-    {
-        // exect to the power of an exact is still exact
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact = std::pow(value.exact,other.value.exact);
-        }
-        // floating pow operation
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating = std::pow(value.floating,other.value.floating);
-        }
-
-        // convert to floating if exponent or base is floating
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = std::pow(value.exact, other.value.floating);
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating = std::pow(value.floating, other.value.exact);
-        }
-
-        return *this;
-    }
-
-    NumericValue& negate()
-    {
-        if (value_type == EXACT)
-            value.exact = -value.exact;
-        else if(value_type == FLOATING)
-            value.floating = -value.floating;
-
-        return *this;
-    }
 };
 
 
@@ -334,7 +195,7 @@ struct NumericExpression : public Expression
 };
 
 
-struct UnaryOperation
+struct UnaryOperation : public Expression
 {
     typedef NumericValue::ptr_t (*unary_operation_t)(NumericValue::ptr_t);
 
@@ -360,7 +221,7 @@ private:
 };
 
 
-struct BinaryOperation
+struct BinaryOperation : public Expression
 {
     typedef NumericValue::ptr_t (*binary_operation_t)
         (NumericValue::ptr_t, NumericValue::ptr_t);
@@ -389,7 +250,11 @@ private:
     binary_operation_t _expr_operator;
 };
 
-
-
+NumericValue::ptr_t negation_op(NumericValue::ptr_t operand);
+NumericValue::ptr_t plus_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
+NumericValue::ptr_t minus_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
+NumericValue::ptr_t multiply_op(NumericValue::ptr_t lhs,NumericValue::ptr_t rhs);
+NumericValue::ptr_t divide_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
+NumericValue::ptr_t pow_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
 
 #endif // ifndef SEMANTIC_HPP_
