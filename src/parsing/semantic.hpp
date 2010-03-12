@@ -163,7 +163,7 @@ struct Expression
     virtual std::ostream& to_stream(std::ostream& os) const = 0;
 
     // return numeric value
-    virtual NumericValue::ptr_t numeric_value() const = 0;
+    virtual NumericValue numeric_value() const = 0;
 
     // virtual destructor
     virtual ~Expression() {}
@@ -179,15 +179,11 @@ struct NumericExpression : public Expression
       : _val(val)
     {}
 
-    virtual NumericValue::ptr_t numeric_value() const
-    {
-        return NumericValue::ptr_t(new NumericValue(_val));
-    }
+    virtual NumericValue numeric_value() const
+    { return _val; }
 
     virtual std::ostream& to_stream(std::ostream& os) const
-    {
-        os<<_val;
-    }
+    { os<<_val; }
 
     virtual ~NumericExpression() {};
 
@@ -197,20 +193,20 @@ struct NumericExpression : public Expression
 
 struct UnaryOperation : public Expression
 {
-    typedef NumericValue::ptr_t (*unary_operation_t)(NumericValue::ptr_t);
+    typedef NumericValue (*unary_operation_t)(const NumericValue&);
 
     UnaryOperation(Expression::ptr_t operand, unary_operation_t expr_operator)
         : _operand(operand), _expr_operator(expr_operator)
     { }
 
-    virtual NumericValue::ptr_t numeric_value() const
+    virtual NumericValue numeric_value() const
     {
         return _expr_operator(_operand->numeric_value());
     }
 
     virtual std::ostream& to_stream(std::ostream& os) const
     {
-        os<<*numeric_value();
+        os<<numeric_value();
     }
 
     virtual ~UnaryOperation() {}
@@ -223,8 +219,8 @@ private:
 
 struct BinaryOperation : public Expression
 {
-    typedef NumericValue::ptr_t (*binary_operation_t)
-        (NumericValue::ptr_t, NumericValue::ptr_t);
+    typedef NumericValue (*binary_operation_t)
+        (const NumericValue&, const NumericValue&);
 
     BinaryOperation(
         Expression::ptr_t lhs, Expression::ptr_t rhs,
@@ -233,14 +229,14 @@ struct BinaryOperation : public Expression
         : _lhs(lhs), _rhs(rhs), _expr_operator(expr_operator)
     { }
 
-    virtual NumericValue::ptr_t numeric_value() const
+    virtual NumericValue numeric_value() const
     {
         return _expr_operator(_lhs->numeric_value(), _rhs->numeric_value());
     }
 
     virtual std::ostream& to_stream(std::ostream& os) const
     {
-        os<<*numeric_value();
+        os<<numeric_value();
     }
 
     virtual ~BinaryOperation() {}
@@ -250,11 +246,11 @@ private:
     binary_operation_t _expr_operator;
 };
 
-NumericValue::ptr_t negation_op(NumericValue::ptr_t operand);
-NumericValue::ptr_t plus_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
-NumericValue::ptr_t minus_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
-NumericValue::ptr_t multiply_op(NumericValue::ptr_t lhs,NumericValue::ptr_t rhs);
-NumericValue::ptr_t divide_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
-NumericValue::ptr_t pow_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs);
+NumericValue negation_op(const NumericValue& operand);
+NumericValue plus_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue minus_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue multiply_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue divide_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue pow_op(const NumericValue& lhs, const NumericValue& rhs);
 
 #endif // ifndef SEMANTIC_HPP_

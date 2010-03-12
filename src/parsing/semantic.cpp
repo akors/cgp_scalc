@@ -20,164 +20,189 @@
 
 #include "semantic.hpp"
 
-NumericValue::ptr_t negation_op(NumericValue::ptr_t operand)
+NumericValue negation_op(const NumericValue& operand)
 {
-    if (operand->value_type == NumericValue::EXACT)
-        operand->value.exact = -operand->value.exact;
-    else if(operand->value_type == NumericValue::FLOATING)
-        operand->value.floating = -operand->value.floating;
+    NumericValue retval;
 
-    return operand;
+    if (operand.value_type == NumericValue::EXACT)
+        retval.value.exact = -operand.value.exact;
+    else if(operand.value_type == NumericValue::FLOATING)
+        retval.value.floating = -operand.value.floating;
+
+    retval.value_type = operand.value_type;
+
+    return retval;
 }
 
-NumericValue::ptr_t plus_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs)
+NumericValue plus_op(const NumericValue& lhs, const NumericValue& rhs)
 {
+    NumericValue retval;
+
     // simply add values of the same type
-    if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::EXACT)
+    if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.exact += rhs->value.exact;
+        retval.value.exact = lhs.value.exact + rhs.value.exact;
+        retval.value_type = NumericValue::EXACT;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating += rhs->value.floating;
+        retval.value.floating = lhs.value.floating + rhs.value.floating;
+        retval.value_type = NumericValue::FLOATING;
     }
 
     // allways convert to higher order representation if types are different
-    else if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating = lhs->value.exact + rhs->value.floating;
-        lhs->value_type = NumericValue::FLOATING;
+        retval.value.floating = lhs.value.exact + rhs.value.floating;
+        retval.value_type = NumericValue::FLOATING;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::EXACT)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.floating += rhs->value.exact;
+        retval.value.floating = lhs.value.floating + rhs.value.exact;
+        retval.value_type = NumericValue::FLOATING;
     }
 
-    return lhs;
+    return retval;
 }
 
-
-NumericValue::ptr_t minus_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs)
+NumericValue minus_op(const NumericValue& lhs, const NumericValue& rhs)
 {
+    NumericValue retval;
+
     // simply subtract values of the same type
-    if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::EXACT)
+    if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.exact -= rhs->value.exact;
+        retval.value.exact = lhs.value.exact - rhs.value.exact;
+        retval.value_type = NumericValue::EXACT;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating -= rhs->value.floating;
+        retval.value.floating = lhs.value.floating - rhs.value.floating;
+        retval.value_type = NumericValue::FLOATING;
     }
 
     // allways convert to higher order representation if types are different
-    else if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating = lhs->value.exact + rhs->value.floating;
-        lhs->value_type = NumericValue::FLOATING;
+        retval.value.floating = lhs.value.exact - rhs.value.floating;
+        retval.value_type = NumericValue::FLOATING;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::EXACT)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.floating -= rhs->value.exact;
+        retval.value.floating = lhs.value.floating - rhs.value.exact;
+        retval.value_type = NumericValue::FLOATING;
     }
 
-    return lhs;
+    return retval;
 }
 
-NumericValue::ptr_t multiply_op(NumericValue::ptr_t lhs,NumericValue::ptr_t rhs)
+NumericValue multiply_op(const NumericValue& lhs, const NumericValue& rhs)
 {
+    NumericValue retval;
+
     // simply multiply values of the same type
-    if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::EXACT)
+    if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.exact *= rhs->value.exact;
+        retval.value.exact = lhs.value.exact * rhs.value.exact;
+        retval.value_type = NumericValue::EXACT;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating *= rhs->value.floating;
+        retval.value.floating = lhs.value.floating * rhs.value.floating;
+        retval.value_type = NumericValue::FLOATING;
     }
 
     // allways convert to higher order representation if types are different
-    else if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating = lhs->value.exact + rhs->value.floating;
-        lhs->value_type = NumericValue::FLOATING;
+        retval.value.floating = lhs.value.exact * rhs.value.floating;
+        retval.value_type = NumericValue::FLOATING;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::EXACT)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.floating *= rhs->value.exact;
+        retval.value.floating = lhs.value.floating * rhs.value.exact;
+        retval.value_type = NumericValue::FLOATING;
     }
 
-    return lhs;
+    return retval;
 }
 
-NumericValue::ptr_t divide_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs)
+NumericValue divide_op(const NumericValue& lhs, const NumericValue& rhs)
 {
+    NumericValue retval;
+
     // division allways produces a floating type
-    if (lhs->value_type == NumericValue::EXACT &&
-      rhs->value_type == NumericValue::EXACT)
+    if (lhs.value_type == NumericValue::EXACT &&
+      rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.floating =
-            static_cast<double>(lhs->value.exact) / rhs->value.exact;
+        retval.value.floating =
+            static_cast<double>(lhs.value.exact) / rhs.value.exact;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating /= rhs->value.floating;
+        retval.value.floating = lhs.value.floating / rhs.value.floating;
     }
-    else if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating = lhs->value.exact / rhs->value.floating;
+        retval.value.floating = lhs.value.exact / rhs.value.floating;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::EXACT)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.floating /= rhs->value.exact;
+        retval.value.floating = lhs.value.floating / rhs.value.exact;
     }
 
-    lhs->value_type = NumericValue::FLOATING;
-    return lhs;
+    retval.value_type = NumericValue::FLOATING;
+    return retval;
 }
 
-NumericValue::ptr_t pow_op(NumericValue::ptr_t lhs, NumericValue::ptr_t rhs)
+NumericValue pow_op(const NumericValue& lhs, const NumericValue& rhs)
 {
-    // exect to the power of an exact is still exact
-    if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::EXACT)
+    NumericValue retval;
+
+    // exact to the power of an exact is still exact
+    if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.exact = std::pow(lhs->value.exact,rhs->value.exact);
+        retval.value.exact = std::pow(lhs.value.exact,rhs.value.exact);
+        retval.value_type = NumericValue::EXACT;
     }
     // floating pow operation
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating = std::pow(lhs->value.floating,rhs->value.floating);
+        retval.value.floating = std::pow(lhs.value.floating,rhs.value.floating);
+        retval.value_type = NumericValue::FLOATING;
     }
 
     // convert to floating if exponent or base is floating
-    else if (lhs->value_type == NumericValue::EXACT &&
-        rhs->value_type == NumericValue::FLOATING)
+    else if (lhs.value_type == NumericValue::EXACT &&
+        rhs.value_type == NumericValue::FLOATING)
     {
-        lhs->value.floating = std::pow(lhs->value.exact, rhs->value.floating);
-        lhs->value_type = NumericValue::FLOATING;
+        retval.value.floating = std::pow(lhs.value.exact, rhs.value.floating);
+        retval.value_type = NumericValue::FLOATING;
     }
-    else if (lhs->value_type == NumericValue::FLOATING &&
-        rhs->value_type == NumericValue::EXACT)
+    else if (lhs.value_type == NumericValue::FLOATING &&
+        rhs.value_type == NumericValue::EXACT)
     {
-        lhs->value.floating = std::pow(lhs->value.floating, rhs->value.exact);
+        retval.value.floating = std::pow(lhs.value.floating, rhs.value.exact);
+        retval.value_type = NumericValue::FLOATING;
     }
 
-    return lhs;
+    return retval;
 }
 
