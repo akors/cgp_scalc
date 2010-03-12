@@ -32,7 +32,7 @@
 void print_prompt(const ParserOptions& parser_options);
 void yyerror(const ParserOptions& parser_options, const char* s);
 
-RegisteredPtrs<NumericValue> numericValue_Ptrs;
+RegisteredPtrs<Expression> Expression_Ptrs;
 
 %}
 
@@ -43,11 +43,11 @@ RegisteredPtrs<NumericValue> numericValue_Ptrs;
 
 %union
 {
-    NumericValue *numeric_value_ptr;
+    Expression *expression_ptr;
 };
 
-%type <numeric_value_ptr> expression
-%type <numeric_value_ptr> number
+%type <expression_ptr> expression
+%type <expression_ptr> number
 
 
 
@@ -85,7 +85,7 @@ input:
 statement:
     expression '\n'
     {
-        std::cout<<*$1<<'\n';
+        std::cout<<*$1<<std::endl;
         print_prompt(parser_options);
     }
 |   error '\n'
@@ -105,43 +105,93 @@ expression:
     { $$ = $1; }
 |   expression '+' expression
     {
-        // add second expression to first, delete second, return first
-        *$1 += *$3;
-        numericValue_Ptrs.registeredDelete($3);
-        $$ = $1;
+        // unregister operand Expressions
+        Expression_Ptrs.unregister($1);
+        Expression_Ptrs.unregister($3);
+
+        // allocate new expression with proper operation, return expression
+        $$ = Expression_Ptrs.registerNew(
+            new BinaryOperation(
+                Expression::ptr_t($1),
+                Expression::ptr_t($3),
+                &plus_op
+        ));
+        MEMORY_ASSERT($$);
     }
 
 |   expression '-' expression
     {
-        *$1 -= *$3;
-        numericValue_Ptrs.registeredDelete($3);
-        $$ = $1;
+        // unregister operand Expressions
+        Expression_Ptrs.unregister($1);
+        Expression_Ptrs.unregister($3);
+
+        // allocate new expression with proper operation, return expression
+        $$ = Expression_Ptrs.registerNew(
+            new BinaryOperation(
+                Expression::ptr_t($1),
+                Expression::ptr_t($3),
+                &minus_op
+        ));
+        MEMORY_ASSERT($$);
     }
 
 |   expression '*' expression
     {
-        *$1 *= *$3;
-        numericValue_Ptrs.registeredDelete($3);
-        $$ = $1;
+        // unregister operand Expressions
+        Expression_Ptrs.unregister($1);
+        Expression_Ptrs.unregister($3);
+
+        // allocate new expression with proper operation, return expression
+        $$ = Expression_Ptrs.registerNew(
+            new BinaryOperation(
+                Expression::ptr_t($1),
+                Expression::ptr_t($3),
+                &multiply_op
+        ));
+        MEMORY_ASSERT($$);
     }
 
 |   expression '/' expression
     {
-        *$1 /= *$3;
-        numericValue_Ptrs.registeredDelete($3);
-        $$ = $1;
+        // unregister operand Expressions
+        Expression_Ptrs.unregister($1);
+        Expression_Ptrs.unregister($3);
+
+        // allocate new expression with proper operation, return expression
+        $$ = Expression_Ptrs.registerNew(
+            new BinaryOperation(
+                Expression::ptr_t($1),
+                Expression::ptr_t($3),
+                &divide_op
+        ));
+        MEMORY_ASSERT($$);
     }
 |   expression '^' expression
     {
-        $1->pow(*$3);
-        numericValue_Ptrs.registeredDelete($3);
-        $$ = $1;
+        // unregister operand Expressions
+        Expression_Ptrs.unregister($1);
+        Expression_Ptrs.unregister($3);
+
+        // allocate new expression with proper operation, return expression
+        $$ = Expression_Ptrs.registerNew(
+            new BinaryOperation(
+                Expression::ptr_t($1),
+                Expression::ptr_t($3),
+                &pow_op
+        ));
+        MEMORY_ASSERT($$);
     }
 
 |   '-' expression  %prec NEGATION
     {
-        $2->negate();
-        $$ = $2;
+        // unregister operand Expressions
+        Expression_Ptrs.unregister($2);
+
+        // allocate new expression with proper operation, return expression
+        $$ = Expression_Ptrs.registerNew(
+            new UnaryOperation(Expression::ptr_t($2), &negation_op)
+        );
+        MEMORY_ASSERT($$);
     }
 
 |   '(' expression ')'
@@ -152,36 +202,40 @@ expression:
 number:
     UINT
     {
-        // create new NumericValue object
-        $$ = numericValue_Ptrs.registerNew(new NumericValue);
-        MEMORY_ASSERT($$);
+        NumericValue val;
 
         try {
             // try to read the number from the string
-            $$->from_exact(yytext);
+            val.from_exact(yytext);
         }
         catch(const NumericError& e)
         {
             yyerror(parser_options, (std::string("Error: ")+e.what()).c_str());
             YYERROR;
         }
+
+        // create new NumericValueExpression object
+        $$ = Expression_Ptrs.registerNew(new NumericExpression(val));
+        MEMORY_ASSERT($$);
     }
 |
     NUMBER
     {
-        // create new NumericValue object
-        $$ = numericValue_Ptrs.registerNew(new NumericValue);
-        MEMORY_ASSERT($$);
+        NumericValue val;
 
         try {
             // try to read the number from the string
-            $$->from_floating(yytext);
+            val.from_floating(yytext);
         }
         catch(const NumericError& e)
         {
             yyerror(parser_options, (std::string("Error: ")+e.what()).c_str());
             YYERROR;
         }
+
+        // create new NumericValueExpression object
+        $$ = Expression_Ptrs.registerNew(new NumericExpression(val));
+        MEMORY_ASSERT($$);
     }
 ;
 
@@ -194,7 +248,7 @@ void yyerror(const ParserOptions& parser_options, const char* s)
 
 void do_cleanup()
 {
-    numericValue_Ptrs.deleteAll();
+    Expression_Ptrs.deleteAll();
 }
 
 void print_prompt(const ParserOptions& parser_options)
