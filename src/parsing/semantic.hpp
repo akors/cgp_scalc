@@ -27,6 +27,11 @@
 #include <cerrno>
 #include <cmath>
 
+#include <memory>
+
+#ifdef __GNUC__ // on gcc, std::tr1::shared_ptr is not part of memory by default
+#   include <tr1/memory>
+#endif
 
 struct NumericError : public std::runtime_error
 {
@@ -63,6 +68,8 @@ public:
 
 struct NumericValue
 {
+    typedef std::tr1::shared_ptr<NumericValue> ptr_t;
+
     // what type of number is this
     enum {
         EXACT,
@@ -130,145 +137,6 @@ struct NumericValue
         return *this;
     }
 
-    NumericValue& operator += (const NumericValue& other)
-    {
-        // simply add values of the same type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact += other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating += other.value.floating;
-        }
-
-        // allways convert to higher order representation if types are different
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact + other.value.floating;
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating += other.value.exact;
-        }
-
-        return *this;
-    }
-
-    NumericValue& operator -= (const NumericValue& other)
-    {
-        // simply subtract values of the same type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact -= other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating -= other.value.floating;
-        }
-
-        // allways convert to higher order representation if types are different
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact - other.value.floating;
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating -= other.value.exact;
-        }
-
-        return *this;
-    }
-
-    NumericValue& operator *= (const NumericValue& other)
-    {
-        // simply multiply values of the same type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact *= other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating *= other.value.floating;
-        }
-
-        // allways convert to higher order representation if types are different
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact * other.value.floating;
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating *= other.value.exact;
-        }
-
-        return *this;
-    }
-
-    NumericValue& operator /= (const NumericValue& other)
-    {
-        // division allways produces a floating type
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.floating =
-                static_cast<double>(this->value.exact) / other.value.exact;
-        }
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating /= other.value.floating;
-        }
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = this->value.exact / other.value.floating;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating /= other.value.exact;
-        }
-
-        this->value_type = FLOATING;
-        return *this;
-    }
-
-    NumericValue& pow(const NumericValue& other)
-    {
-        // exect to the power of an exact is still exact
-        if (this->value_type == EXACT && other.value_type == EXACT)
-        {
-            this->value.exact = std::pow(value.exact,other.value.exact);
-        }
-        // floating pow operation
-        else if (this->value_type == FLOATING && other.value_type == FLOATING)
-        {
-            this->value.floating = std::pow(value.floating,other.value.floating);
-        }
-
-        // convert to floating if exponent or base is floating
-        else if (this->value_type == EXACT && other.value_type == FLOATING)
-        {
-            this->value.floating = std::pow(value.exact, other.value.floating);
-            this->value_type = FLOATING;
-        }
-        else if (this->value_type == FLOATING && other.value_type == EXACT)
-        {
-            this->value.floating = std::pow(value.floating, other.value.exact);
-        }
-
-        return *this;
-    }
-
-    NumericValue& negate()
-    {
-        if (value_type == EXACT)
-            value.exact = -value.exact;
-        else if(value_type == FLOATING)
-            value.floating = -value.floating;
-
-        return *this;
-    }
 };
 
 
@@ -284,5 +152,105 @@ inline std::ostream& operator << (std::ostream& os, const NumericValue& v)
 inline std::istream& operator >> (std::istream& is, NumericValue& v)
 { return is>>v.value.floating; }
 #endif
+
+
+
+struct Expression
+{
+    typedef std::tr1::shared_ptr<Expression> ptr_t;
+
+    // output class value to stream
+    virtual std::ostream& to_stream(std::ostream& os) const = 0;
+
+    // return numeric value
+    virtual NumericValue numeric_value() const = 0;
+
+    // virtual destructor
+    virtual ~Expression() {}
+};
+
+inline std::ostream& operator << (std::ostream& os, const Expression& exp)
+{ return exp.to_stream(os); }
+
+
+struct NumericExpression : public Expression
+{
+    NumericExpression(const NumericValue& val)
+      : _val(val)
+    {}
+
+    virtual NumericValue numeric_value() const
+    { return _val; }
+
+    virtual std::ostream& to_stream(std::ostream& os) const
+    { os<<_val; }
+
+    virtual ~NumericExpression() {};
+
+    NumericValue _val;
+};
+
+
+struct UnaryOperation : public Expression
+{
+    typedef NumericValue (*unary_operation_t)(const NumericValue&);
+
+    UnaryOperation(Expression::ptr_t operand, unary_operation_t expr_operator)
+        : _operand(operand), _expr_operator(expr_operator)
+    { }
+
+    virtual NumericValue numeric_value() const
+    {
+        return _expr_operator(_operand->numeric_value());
+    }
+
+    virtual std::ostream& to_stream(std::ostream& os) const
+    {
+        os<<numeric_value();
+    }
+
+    virtual ~UnaryOperation() {}
+
+private:
+    Expression::ptr_t _operand;
+    unary_operation_t _expr_operator;
+};
+
+
+struct BinaryOperation : public Expression
+{
+    typedef NumericValue (*binary_operation_t)
+        (const NumericValue&, const NumericValue&);
+
+    BinaryOperation(
+        Expression::ptr_t lhs, Expression::ptr_t rhs,
+        binary_operation_t expr_operator
+    )
+        : _lhs(lhs), _rhs(rhs), _expr_operator(expr_operator)
+    { }
+
+    virtual NumericValue numeric_value() const
+    {
+        return _expr_operator(_lhs->numeric_value(), _rhs->numeric_value());
+    }
+
+    virtual std::ostream& to_stream(std::ostream& os) const
+    {
+        os<<numeric_value();
+    }
+
+    virtual ~BinaryOperation() {}
+
+private:
+    Expression::ptr_t _lhs, _rhs;
+    binary_operation_t _expr_operator;
+};
+
+NumericValue negation_op(const NumericValue& operand);
+NumericValue plus_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue minus_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue multiply_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue divide_op(const NumericValue& lhs, const NumericValue& rhs);
+NumericValue pow_op(const NumericValue& lhs, const NumericValue& rhs);
 
 #endif // ifndef SEMANTIC_HPP_
