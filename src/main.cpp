@@ -95,12 +95,16 @@ int main(int argc, char** argv)
     // do the parsing
     try {
         yyparse(parser_options);
+
+        if (!parser_options.file_input)
+            std::cout<<std::endl;
     }
     catch (const std::exception& e)
     {
-        std::cerr<<"Encountered exception while parsing: "<<e.what();
+        std::cerr<<"Encountered exception while parsing: "<<e.what()<<'\n';
         do_cleanup();
     };
+
 
     return 0;
 }
