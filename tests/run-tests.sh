@@ -14,6 +14,8 @@
 # Depends: grep, tee, diff
 
 
+FILEXT='.sc'
+
 
 # Run actual testing
 #
@@ -24,7 +26,7 @@
 run_test()
 {
     # compare the output of $1 when called with $2.sc to $2.expected
-    "$1" "$2.sc" 2>&1 | tee "$TEMP_OUT_FILE" | \
+    "$1" "$2$FILEXT" 2>&1 | tee "$TEMP_OUT_FILE" | \
         diff --side-by-side - "$2.expected" 2>&1 > "$TEMP_DIFF_OUT"
 
     return $?
@@ -57,7 +59,7 @@ TEMP_OUT_FILE="/dev/null"
 TEMP_DIFF_OUT=$(mktemp)
 
 # retrieve only those files that end with .sc
-FILEPAT='.\+\.sc'
+FILEPAT=".\\+\\$FILEXT"
 
 # retrieve all test files from testing directory
 ifs="$IFS"
@@ -70,10 +72,10 @@ IFS="$ifs"
 
 for TFILE in $TESTFILES
 do
-    T_BASENAME="${TFILE%.sc}"
+    T_BASENAME="${TFILE%$FILEXT}"
     printf "Running $T_BASENAME... "
 
-    run_test "$EXFILE" "$TESTDIR/$(basename $TFILE .sc)"
+    run_test "$EXFILE" "$TESTDIR/$(basename $TFILE $FILEXT)"
     if [ $? -eq 0 ]
     then
         printf '\33[32m passed. \33[0m\n'
