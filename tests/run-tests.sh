@@ -1,5 +1,20 @@
 #!/bin/sh
 
+# Executable testing script
+# Purpose of this script is to run an executable to be tested with files in a
+# directory and compare the stdout of the executable to files containing the
+# expected output
+#
+# Usage: ./run-tests.sh <executable> <testing-directory>
+#
+# This searches <testing-directory> for .sc files, runs the <executable> with
+# all files ending with '.sc' as argument and compares the output to the files
+# ending with '.expected'.
+#
+# Depends: grep, tee, diff
+
+
+
 # Run actual testing
 #
 # $1: the executable filename
